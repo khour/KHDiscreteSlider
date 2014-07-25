@@ -87,35 +87,29 @@ static const NSTimeInterval kStepAnimationDuration = 0.2;
     {
         if (self.isDiscrete)
         {
-            // clip maximum and minimum values while backing up the originals
+            // slider was swithed from normal to discrete
+            // back up original maximum and minimum
             self.backedUpMaximumValue = newMaximumValue;
             self.backedUpMinimumValue = newMinimumValue;
-            newMaximumValue = floorf(newMaximumValue / self.discreteStepValue) * self.discreteStepValue;
-            newMinimumValue = ceilf(newMinimumValue / self.discreteStepValue) * self.discreteStepValue;
-            
-            // also round the current value
-            self.value = roundf(self.value / self.discreteStepValue) * self.discreteStepValue;
         }
         else
         {
-            // restore backed up unclipped minimum and maximum
+            // slider was swithed from discrete to normal
+            // restore original maximum and minimum from the backup
             newMaximumValue = self.backedUpMaximumValue;
             newMinimumValue = self.backedUpMinimumValue;
         }
     }
-    else if ([keyPath isEqualToString:@"discreteStepValue"])
+    
+    if (self.isDiscrete)
     {
-        if (self.isDiscrete)
-        {
-            newMaximumValue = self.backedUpMaximumValue;
-            newMinimumValue = self.backedUpMinimumValue;
-            
-            newMaximumValue = floorf(newMaximumValue / self.discreteStepValue) * self.discreteStepValue;
-            newMinimumValue = ceilf(newMinimumValue / self.discreteStepValue) * self.discreteStepValue;
-            
-            // also round the current value
-            self.value = roundf(self.value / self.discreteStepValue) * self.discreteStepValue;
-        }
+        // slider was switched from normal to discrete or its step was changed
+        // either way adjust minimum and maximum using the backed up originals
+        newMaximumValue = floorf(self.backedUpMaximumValue / self.discreteStepValue) * self.discreteStepValue;
+        newMinimumValue = ceilf(self.backedUpMinimumValue / self.discreteStepValue) * self.discreteStepValue;
+        
+        // also adjust the current value so it falls into one of the steps
+        self.value = roundf(self.value / self.discreteStepValue) * self.discreteStepValue;
     }
     
     super.maximumValue = newMaximumValue;
